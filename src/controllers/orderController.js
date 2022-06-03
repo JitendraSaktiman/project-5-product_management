@@ -52,32 +52,22 @@ const createOrder = async function (req, res) {
             return res.status(202).send({ status: false, message: "cart have no items" });
         }
         if (checkUserCart.items.length > 0) {
-            let sum = 0;
-            for (let i = 0; i < checkUserCart.items.length; i++) {
-                sum = + checkUserCart.items[i].quantity
+            
+            let quantityValue=0;
+            for(let i= 0;i<checkUserCart.items.length;i++){
+                quantityValue+=checkUserCart.items[i].quantity 
+                body.totalQuantity = quantityValue
             }
-
         }
- 
+
         body.totalItems = checkUserCart.totalItems
         body.items = checkUserCart.items
         body.totalPrice = checkUserCart.totalPrice
         body.userId=req.params.userId
-        // body.totalQuantity = checkUserCart.items
+         
+        
 
-        // var quantityValue = 0;
-        // for(let i =0; i<checkUserCart.items.length; i++){
-        //      quantityValue += checkUserCart.items[i]
-        // }
-
-        // body["totalQuantity"] = quantityValue
-        console.log(body.totalQuantity)
-
-        let quantityValue=0;
-        for(let i= 0;i<checkUserCart.items.length;i++){
-            quantityValue+=checkUserCart.items[i].quantity 
-            body.totalQuantity = quantityValue
-        }
+        
         let createOrder = await orderModel.create(body)
 
         let findCreatedOrder = await orderModel.findById({ _id: createOrder._id }).select({ "__v": 0 })
@@ -97,13 +87,13 @@ const updateOrder= async function(req,res){
 
         let body=req.body
 
-        let {orderId}=body
+        let {status,orderId}=body
 
         if(Object.keys(body).length === 0 ){
             return res.status(400).send({Status: false , message: "Please provide data"})   
         }
 
-        if(!orderId || orderId == ""){
+        if(!valitador.isValid(orderId)  ){
             return res.status(400).send({Status: false , message: "Please provide orderId"})
         }
         if(!isValidObjectId(orderId)){
@@ -137,12 +127,7 @@ const updateOrder= async function(req,res){
             return res.status(200).send({ status: true, message: "Success", data: updateOrderDetail })
         }
 
-        let orderPresent = await orderModel.findOne({ _id: orderId, isDeleted: false })
- 
-        if (!orderPresent) {
-            return res.status(404).send({ status: false, message: "Order not found " })
-        }
-
+      
         if (!status) {
             if (!validator.isValid(status)) {
                 return res.status(400).send({ status: false, message: "provide status in request body" })
